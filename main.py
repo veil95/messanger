@@ -4,12 +4,15 @@ from pydantic import BaseModel
 from pwdlib import PasswordHash
 from jose import jwt
 from datetime import timedelta, datetime
+from dotenv import load_dotenv
+from os import getenv
 
+load_dotenv()
 
-SECRET_KEY = "very_very_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 15
-REFRESH_TOKEN_EXPIRE_DAYS = 7
+SECRET_KEY = getenv("SECRET_KEY")
+ALGORITHM = getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+REFRESH_TOKEN_EXPIRE_DAYS = int(getenv("REFRESH_TOKEN_EXPIRE_DAYS"))
 
 app = FastAPI()
 users_db = {} # фейк база данных с пользователя {username: {"hashed_password", "displayname"}}
@@ -76,18 +79,28 @@ async def root():
 
 @app.post("/auth/login")
 async def login(user: UserLogin):
+
+    increment_login_attempt(user.username)
+
     if user.username not in users_db:
         raise HTTPException(
             status_code = status.HTTP_401_UNAUTHORIZED,
             detail = "Incorrect login or password"
         )
+
     if not check_rate_limit(user.username):
         raise HTTPException(
             status_code = status.HTTP_429_TOO_MANY_REQUESTS,
             detail = "Too many login attempts. Please try again later"
         )
 
-    increment_login_attempt(user.username)
+    user_hashed_password = users_db[user.username]["hashed_password"]
+
+    if not verify_password(user.password, user_hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect login or password"
+        )
 
     access_token = create_access_token(user.username)
 
