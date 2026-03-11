@@ -1,4 +1,5 @@
 import re
+from typing import Optional
 
 from pwdlib import PasswordHash
 
@@ -9,7 +10,9 @@ class AuthController:
     def hash_password(self, password_plaintext: str) -> str:
         return self.hashing.hash(password_plaintext)
 
-    def verify_password(self, password_plaintext: str, hashed_password: str) -> bool:
+    def verify_password(self, password_plaintext: str, hashed_password: Optional[str]) -> bool:
+        if hashed_password is None:
+            return False
         return self.hashing.verify(password_plaintext, hashed_password)
 
     def valide_username(self, username: str) -> bool:

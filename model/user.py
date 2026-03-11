@@ -18,8 +18,11 @@ class User:
     def get_user(self, username: str) -> dict | None:
         return self.users_db.get(username)
 
-    def get_hashed_password(self, username: str) -> str:
-        return self.users_db[username]["hashed_password"]
+    def get_hashed_password(self, username: str) -> Optional[str]:
+        password = self.users_db[username]["hashed_password"]
+        if password:
+            return password
+        return None
 
 class UserLogin(BaseModel):
     username: str
