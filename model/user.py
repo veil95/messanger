@@ -1,7 +1,7 @@
 import re
-
+from fastapi import HTTPException, status
 from pydantic import BaseModel, Field, field_validator
-
+from typing import Optional
 
 class User:
     def __init__(self):
@@ -24,13 +24,33 @@ class User:
             return password
         return None
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
 
+
 class UserRequestRegistation(BaseModel):
-    username: str
-    displayname: str
-    password_plaintext: str
+    username: str = Field(..., min_length = 3, max_length = 25)
+    displayname: str = Field(..., min_length = 1, max_length = 30)
+    password_plaintext: str = Field(..., min_length = 5)
+
+    @field_validator('username', mode = 'before')
+    def valide_username(cls, value):
+        if not re.match("^[a-zA-Z0-9_]+$", value):
+            raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST,
+                                detail = "The username can only contain letters and numbers")
+        if len(value) < 3 or len(value) > 25:
+            raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST,
+                                detail = "Username must be at least 3 characters and not exceed 25")
+        return value
+
+    @field_validator('password_plaintext', mode = 'before')
+    def check_password(cls, value):
+        if len(value) < 5:
+            raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST,
+                                detail = "your password is too easy, password must be at least 5 characters long")
+        return value
+
 
 user_instance = User()

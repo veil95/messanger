@@ -12,10 +12,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/login")
 async def login(user_data: UserLogin):
-    print(user.users_db)
     ratelimit.increment_login_attempt(user_data.username)
-    print(user.user_exists(user_data.username))
-    print(auth_controller.verify_password(user_data.password, user.get_hashed_password(user_data.username)))
     if not (user.user_exists(user_data.username) or not
     (auth_controller.verify_password(user_data.password, user.get_hashed_password(user_data.username)))):
         raise HTTPException(
@@ -44,16 +41,21 @@ async def register(user_data: UserRequestRegistation):
             status_code = status.HTTP_400_BAD_REQUEST,
             detail = "username is already registered"
         )
-    if not auth_controller.check_password_len(user_data.password_plaintext):
-        raise HTTPException(
-            status_code = status.HTTP_400_BAD_REQUEST,
-            detail = "your password is too easy, password must be at least 5 characters long"
-        )
-    if not auth_controller.check_username_len(user_data.username):
-        raise HTTPException(
-            status_code = status.HTTP_400_BAD_REQUEST,
-            detail = "username must be at least 3 characters long"
-        )
+    # if not auth_controller.check_password_len(user_data.password_plaintext):
+    #     raise HTTPException(
+    #         status_code = status.HTTP_400_BAD_REQUEST,
+    #         detail = "your password is too easy, password must be at least 5 characters long"
+    #     )
+    # if not auth_controller.check_username_len(user_data.username):
+    #     raise HTTPException(
+    #         status_code = status.HTTP_400_BAD_REQUEST,
+    #         detail = "username must be at least 3 characters long"
+    #     )
+    # if not auth_controller.valide_username(user_data.username):
+    #     raise HTTPException(
+    #         status_code = status.HTTP_400_BAD_REQUEST,
+    #         detail = "The username can only contain letters and numbers."
+    #     )
 
     hashed_password = auth_controller.hash_password(user_data.password_plaintext)
 
