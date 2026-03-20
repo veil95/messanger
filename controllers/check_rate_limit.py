@@ -28,6 +28,7 @@ class Ratelimit:
         else:
             self.login_attempts[username]["attempts"] += 1
             self.login_attempts[username]["last_attempts_time"] = time.time()
+
     def reset_attempts(self, username: str):
         self.login_attempts[username]["attempts"] = 0
         return

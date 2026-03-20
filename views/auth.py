@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from controllers.user_auth import AuthController
 from controllers.check_rate_limit import Ratelimit
-from model.Token import create_access_token
-from model.user import User, UserLogin, UserRequestRegistation
+from controllers.jwt_handler import create_access_token
+from model.user import UserLogin, UserRequestRegistation
 from model.user import user_instance as user
 
 ratelimit = Ratelimit()
@@ -13,7 +13,9 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 @router.post("/login")
 async def login(user_data: UserLogin):
+
     ratelimit.increment_login_attempt(user_data.username)
+
     if not (user.user_exists(user_data.username) or not
     (auth_controller.verify_password(user_data.password, user.get_hashed_password(user_data.username)))):
         raise HTTPException(
