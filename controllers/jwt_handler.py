@@ -37,7 +37,7 @@ def decode_token(token: str):
     except jwt.JWTError:
         raise HTTPException(status_code=403, detail="invalid token")
 
-def verify_access_token(token: str) -> bool:
+def verify_access_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY,algorithms=ALGORITHM)
         #ну а это проверка на нужный тип токена
@@ -46,11 +46,12 @@ def verify_access_token(token: str) -> bool:
                 status_code=401,
                 detail="Invalid token type")
         #проверить существует ли username
-        if "username" not in payload:
+        username = payload.get("username")
+        if not username:
             raise HTTPException(
                 status_code=403,
                 detail="Invalid token payload")
-        return True
+        return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=401,

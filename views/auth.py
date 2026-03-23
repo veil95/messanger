@@ -1,12 +1,14 @@
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Response, Depends
 from controllers.user_auth import AuthController
 from controllers.check_rate_limit import Ratelimit
-from controllers.jwt_handler import create_access_token, create_refresh_token, decode_token
+from controllers.jwt_handler import create_access_token, create_refresh_token, verify_access_token
 from model.user import UserLogin, UserRequestRegistation
 from model.user import user_instance as user
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 ratelimit = Ratelimit()
 auth_controller = AuthController()
+security = HTTPBearer()
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -58,5 +60,15 @@ async def register(user_data: UserRequestRegistation):
     user.create_user(user_data.username, hashed_password, user_data.displayname)
 
     return {f"message": "пользователь создан"}
-# @router.post("/me")
-# async def refresh_token(user)
+@router.get("/me")
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    token = credentials.credentials
+
+    payload = verify_access_token(token)
+
+    user_data = user.get_user(payload["username"])
+
+    return {
+        "username": user_data.username,
+        "display_name": user_data.display_name
+    }
