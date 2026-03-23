@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from os import getenv
 from dotenv import load_dotenv
 from jose import jwt
@@ -37,3 +37,26 @@ def decode_token(token: str):
     except jwt.JWTError:
         raise HTTPException(status_code=403, detail="invalid token")
 
+def verify_access_token(token: str) -> bool:
+    try:
+        payload = jwt.decode(token, SECRET_KEY,algorithms=ALGORITHM)
+        #ну а это проверка на нужный тип токена
+        if payload.get("type") != "access":
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid token type")
+        #проверить существует ли username
+        if "username" not in payload:
+            raise HTTPException(
+                status_code=403,
+                detail="Invalid token payload")
+        return True
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=401,
+            detail="Token expired")
+    #токен не действителен, подделан или еще пишут что истек, но тогда верхняя проверка не нужна? не понял в общем
+    except jwt.JWTError:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid Token")

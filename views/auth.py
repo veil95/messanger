@@ -37,7 +37,7 @@ async def login(user_data: UserLogin, response: Response):
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=True,
+        secure=False,
     )
 
     ratelimit.reset_attempts(user_data.username)
@@ -58,3 +58,5 @@ async def register(user_data: UserRequestRegistation):
     user.create_user(user_data.username, hashed_password, user_data.displayname)
 
     return {f"message": "пользователь создан"}
+# @router.post("/me")
+# async def refresh_token(user)
