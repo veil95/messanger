@@ -5,6 +5,7 @@ from controllers.jwt_handler import create_access_token, create_refresh_token, v
 from model.user import UserLogin, UserRequestRegistation
 from model.user import user_instance as user
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from model.token import TokenTransport, TokenJWT, TokenTypeJWT
 
 ratelimit = Ratelimit()
 auth_controller = AuthController()
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 
 @router.post("/login")
-async def login(user_data: UserLogin, response: Response):
+async def login(user_data: UserLogin, response: Response) -> TokenJWT:
 
     ratelimit.increment_login_attempt(user_data.username)
 
@@ -40,11 +41,12 @@ async def login(user_data: UserLogin, response: Response):
         value=refresh_token,
         httponly=True,
         secure=False,
+        samesite="lax"
     )
 
     ratelimit.reset_attempts(user_data.username)
 
-    return {"access_token": access_token, "type": "bearer"}
+    return TokenJWT(token=access_token, type=TokenTypeJWT.ACCESS_TOKEN, transport=TokenTransport.BEARER)
 
 
 @router.post("/register")

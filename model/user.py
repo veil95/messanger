@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
+
 class User:
     def __init__(self):
         self.users_db = {}

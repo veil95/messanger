@@ -6,7 +6,7 @@ from views.token_routes import token_router
 app = FastAPI()
 
 app.include_router(router)
-app.include_router(router_token)
+app.include_router(token_router)
 
 @app.get("/")
 async def root():

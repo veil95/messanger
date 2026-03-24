@@ -11,7 +11,7 @@ class AuthController:
         return self.hashing.hash(password_plaintext)
 
     def verify_password(self, password_plaintext: str, hashed_password: Optional[str]) -> bool:
-        if hashed_password is None:
+        if not hashed_password:
             return False
         return self.hashing.verify(password_plaintext, hashed_password)
 
