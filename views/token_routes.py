@@ -5,7 +5,7 @@ from model.user import user_instance as user
 token_router = APIRouter(prefix="/auth", tags=["token"])
 
 @token_router.post("/refresh")
-async def refresh_token(request: Request, response: Response) -> dict:
+async def refresh_tokens(request: Request, response: Response) -> dict:
     refresh_token = request.cookies.get("refresh_token")
 
     if not refresh_token:
