@@ -1,12 +1,12 @@
-import time
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI
 from views.auth import router
+from views.token_routes import token_router
 
 
 app = FastAPI()
 
 app.include_router(router)
-
+app.include_router(router_token)
 
 @app.get("/")
 async def root():

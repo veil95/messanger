@@ -41,7 +41,7 @@ def verify_access_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, SECRET_KEY,algorithms=ALGORITHM)
         #ну а это проверка на нужный тип токена
-        if payload.get("type") != "access":
+        if payload.get("type") != "access_token":
             raise HTTPException(
                 status_code=401,
                 detail="Invalid token type")
@@ -57,6 +57,29 @@ def verify_access_token(token: str) -> dict:
             status_code=401,
             detail="Token expired")
     #токен не действителен, подделан или еще пишут что истек, но тогда верхняя проверка не нужна? не понял в общем
+    except jwt.JWTError:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid Token")
+
+
+def verify_refresh_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
+        if payload.get("type") != "refresh_token":
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid token type")
+        username = payload.get("username")
+        if not username:
+            raise HTTPException(
+                status_code=403,
+                detail="Invalid token payload")
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=401,
+            detail="Token expired")
     except jwt.JWTError:
         raise HTTPException(
             status_code=403,
