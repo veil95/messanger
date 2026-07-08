@@ -34,7 +34,7 @@ async def login(user_data: UserLogin, response: Response) -> TokenJWT:
 
     access_token = create_access_token(user_data.username)
 
-    refresh_token = create_refresh_token(user.username)
+    refresh_token = create_refresh_token(user_data.username)
 
     response.set_cookie(
         key="refresh_token",
@@ -62,15 +62,18 @@ async def register(user_data: UserRequestRegistation):
     user.create_user(user_data.username, hashed_password, user_data.displayname)
 
     return {f"message": "пользователь создан"}
+
+
 @router.get("/me")
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     token = credentials.credentials
 
     payload = verify_access_token(token)
 
-    user_data = user.get_user(payload["username"])
-
+    user_data = user.get_user(payload["sub"])
+    print(user_data)
+    print(payload)
     return {
-        "username": user_data.username,
-        "display_name": user_data.display_name
+        "username": payload["sub"],
+        "displayname": user_data.get("displayname")
     }

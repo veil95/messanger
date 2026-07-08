@@ -13,7 +13,7 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(getenv("REFRESH_TOKEN_EXPIRE_DAYS"))
 
 
 def create_refresh_token(username: str) -> str:
-    expire = datetime.utcnow() + timedelta(days = REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     data = {"sub": username,
             "exp": expire,
             "type": "refresh_token"}
@@ -40,11 +40,11 @@ def decode_token(token: str):
 
 def verify_access_token(token: str) -> dict:
     payload = decode_token(token)
-    if payload.get("type") != TokenTypeJWT.ACCESS_TOKEN:
+    if payload.get("type") != TokenTypeJWT.ACCESS_TOKEN.value:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token type")
-    username = payload.get("username")
+    username = payload.get("sub")
     if not username:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -58,7 +58,7 @@ def verify_refresh_token(token: str) -> dict:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token type")
-    username = payload.get("username")
+    username = payload.get("sub")
 
     if not username:
         raise HTTPException(

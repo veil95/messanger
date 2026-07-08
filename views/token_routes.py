@@ -2,15 +2,16 @@ from fastapi import HTTPException, APIRouter, Response, Request
 from controllers.jwt_handler import verify_refresh_token, create_refresh_token, create_access_token
 from model.user import user_instance as user
 from model.token import TokenTypeJWT, TokenJWT, TokenTransport
-
+from fastapi import status
 token_router = APIRouter(prefix="/auth", tags=["token"])
+
 
 @token_router.post("/refresh")
 async def get_refresh_token(request: Request, response: Response) -> TokenJWT:
     refresh_token = request.cookies.get("refresh_token")
 
     if not refresh_token:
-        raise HTTPException(status_code=401, detail="Refresh token not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token not found")
 
     payload = verify_refresh_token(refresh_token)
 
